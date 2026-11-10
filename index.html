@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فندق أبراج المدينة | حجز الفنادق الفاخرة</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Google Fonts (Cairo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg shadow-amber-500/20">
+                    <i class="fa-solid fa-hotel"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white" id="hotel-title">فندق أبراج المدينة</h1>
+                    <p class="text-xs text-amber-400 font-medium">Abraj Al Madina Hotel</p>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center space-x-6 space-x-reverse text-sm font-medium text-slate-300">
+                <a href="#rooms" class="hover:text-amber-400 transition">الغرف والأجنحة</a>
+                <a href="#amenities" class="hover:text-amber-400 transition">المرافق والخدمات</a>
+                <a href="#policies" class="hover:text-amber-400 transition">سياسات الفندق</a>
+            </div>
+            <div>
+                <a href="tel:+9647700000000" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>اتصل للاستفسار</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-[75vh] flex items-center justify-center bg-slate-900 overflow-hidden py-16">
+        <!-- Background Image with Overlay -->
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1920&q=80" alt="فندق أبراج المدينة" class="w-full h-full object-cover object-center opacity-40 scale-105 animate-pulse duration-1000">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-slate-900/40"></div>
+        </div>
+
+        <div class="relative z-10 max-w-5xl mx-auto px-4 text-center">
+            <div class="inline-flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 px-4 py-1.5 rounded-full text-xs font-semibold mb-6 shadow-inner">
+                <i class="fa-solid fa-star text-amber-400"></i>
+                <i class="fa-solid fa-star text-amber-400"></i>
+                <i class="fa-solid fa-star text-amber-400"></i>
+                <span class="mr-1">ضيافة فندقية راقية في العراق</span>
+            </div>
+            <h2 class="text-4xl sm:text-6xl font-black text-white tracking-tight mb-6 leading-tight">
+                اختبر المعنى الحقيقي <br class="hidden sm:inline"><span class="text-amber-400">للراحة والرفاهية</span>
+            </h2>
+            <p class="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto mb-10 font-light" id="hero-tagline">
+                إقامة فاخرة تجمع بين الراحة والضيافة العراقية الأصيلة. احجز غرفتك بكل سهولة وبدون عمولات إضافية.
+            </p>
+        </div>
+    </section>
+
+    <!-- Interactive Quick Booking Bar -->
+    <div class="max-w-4xl mx-auto px-4 -mt-16 relative z-30 mb-20">
+        <div class="bg-slate-900/95 backdrop-blur-xl border border-slate-800 p-6 rounded-3xl shadow-2xl shadow-black/80 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1.5"><i class="fa-regular fa-calendar-days text-amber-400 ml-1"></i> تاريخ الوصول</label>
+                <input type="date" id="search-checkin" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1.5"><i class="fa-regular fa-calendar-days text-amber-400 ml-1"></i> تاريخ المغادرة</label>
+                <input type="date" id="search-checkout" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 mb-1.5"><i class="fa-solid fa-users text-amber-400 ml-1"></i> عدد النزلاء</label>
+                <select id="search-guests" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500">
+                    <option value="1">شخص واحد</option>
+                    <option value="2" selected>شخصان بالغفان</option>
+                    <option value="3">3 أشخاص</option>
+                    <option value="4">عائلة (4 أشخاص)</option>
+                </select>
+            </div>
+            <div class="flex items-end pt-2 md:pt-0">
+                <button onclick="scrollToRooms()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3 px-4 rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 text-sm">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>عرض الغرف المتاحة</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Amenities Section -->
+    <section id="amenities" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
+        <div class="text-center mb-12">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-amber-400 mb-3">راحتكم أولويتنا</h3>
+            <h2 class="text-3xl font-extrabold text-white">المرافق والخدمات المميزة</h2>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4" id="amenities-container">
+            <!-- Dynamically populated via JS -->
+        </div>
+    </section>
+
+    <!-- Rooms Section -->
+    <section id="rooms" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+            <div>
+                <h3 class="text-xs font-bold uppercase tracking-widest text-amber-400 mb-3">خيارات الإقامة</h3>
+                <h2 class="text-3xl font-extrabold text-white">الغرف والأجنحة الفاخرة</h2>
+            </div>
+            <p class="text-slate-400 text-sm mt-2 md:mt-0">اختر الغرفة التي تناسب رحلتك واحجز مباشرة عبر واتساب</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8" id="rooms-container">
+            <!-- Rooms loaded via JS -->
+        </div>
+    </section>
+
+    <!-- Policies Section -->
+    <section id="policies" class="max-w-5xl mx-auto px-4 mb-24">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-xl">
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                <i class="fa-solid fa-circle-info text-amber-400"></i>
+                <span>سياسات وأوقات الفندق</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-300">
+                <div class="bg-slate-950/50 p-5 rounded-2xl border border-slate-800/80">
+                    <h4 class="font-bold text-white mb-2 flex items-center gap-2">
+                        <i class="fa-regular fa-clock text-amber-400"></i> أوقات الدخول والخروج
+                    </h4>
+                    <p class="mb-1">تسجيل الوصول (Check-in): يبدأ من الساعة <span class="text-amber-400 font-semibold" id="policy-checkin">2:00 ظهراً</span></p>
+                    <p>تسجيل المغادرة (Check-out): حتى الساعة <span class="text-amber-400 font-semibold" id="policy-checkout">12:00 ظهراً</span></p>
+                </div>
+                <div class="bg-slate-950/50 p-5 rounded-2xl border border-slate-800/80">
+                    <h4 class="font-bold text-white mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-wallet text-amber-400"></i> الدفع والحجوزات
+                    </h4>
+                    <p class="mb-1">الدفع يتم نقداً عند الوصول مباشرة إلى مكتب الاستقبال في الفندق.</p>
+                    <p class="text-amber-400/90 font-medium">لا توجد أي رسوم أو عمولات خفية للحجز عبر الموقع الإلكتروني.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Modal / Drawer -->
+    <div id="booking-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <button onclick="closeBookingModal()" class="absolute top-6 left-6 text-slate-400 hover:text-white bg-slate-800 w-9 h-9 rounded-full flex items-center justify-center transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h3 class="text-2xl font-extrabold text-white mb-2">تأكيد حجز الغرفة</h3>
+            <p class="text-sm text-slate-400 mb-6" id="modal-room-name">غرفة مزدوجة ديلوكس</p>
+
+            <form id="booking-form" onsubmit="submitWhatsAppBooking(event)" class="space-y-4">
+                <input type="hidden" id="modal-room-id">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">تاريخ الوصول</label>
+                        <input type="date" id="modal-checkin" required class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">تاريخ المغادرة</label>
+                        <input type="date" id="modal-checkout" required class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" onchange="calculateTotal()">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">عدد الغرف</label>
+                        <input type="number" id="modal-rooms-count" value="1" min="1" max="5" required class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500" onchange="calculateTotal()">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">عدد البالغين</label>
+                        <input type="number" id="modal-adults-count" value="2" min="1" max="6" required class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-amber-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">الاسم الكامل للنزيل</label>
+                    <input type="text" id="modal-name" placeholder="أدخل اسمك الثلاثي" required class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">رقم الهاتف (واتساب)</label>
+                    <input type="tel" id="modal-phone" placeholder="07700000000" required class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">ملاحظات أو طلبات خاصة (اختياري)</label>
+                    <textarea id="modal-notes" rows="2" placeholder="مثال: سرير إضافي، طابق مرتفع..." class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-amber-500"></textarea>
+                </div>
+
+                <!-- Price Summary Box -->
+                <div class="bg-slate-950 border border-amber-500/30 p-4 rounded-2xl flex items-center justify-between">
+                    <div>
+                        <span class="text-xs text-slate-400 block">إجمالي التكلفة التقديرية</span>
+                        <span class="text-lg font-bold text-amber-400" id="modal-total-price">0 د.ع</span>
+                    </div>
+                    <div class="text-left">
+                        <span class="text-xs text-slate-400 block">عدد الليالي</span>
+                        <span class="text-sm font-semibold text-white" id="modal-nights-count">1 ليلة</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-extrabold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center gap-2 text-base">
+                    <i class="fa-brands fa-whatsapp text-xl"></i>
+                    <span>إرسال طلب الحجز عبر واتساب</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-12 text-center text-slate-400 text-sm">
+        <div class="max-w-7xl mx-auto px-4">
+            <h4 class="text-lg font-bold text-white mb-2" id="footer-hotel-name">فندق أبراج المدينة</h4>
+            <p class="mb-6 text-slate-400" id="footer-tagline">نستقبلكم طوال أيام السنة لتقديم أفرغ خدمات الضيافة.</p>
+            <div class="flex justify-center gap-6 mb-6">
+                <a href="tel:+9647700000000" class="hover:text-amber-400 transition flex items-center gap-2"><i class="fa-solid fa-phone text-amber-400"></i> <span id="footer-phone">+964 770 000 0000</span></a>
+            </div>
+            <p class="text-xs text-slate-600">جميع الحقوق محفوظة © 2026 فندق أبراج المدينة. تم تطوير الموقع بأعلى معايير الويب الحديثة.</p>
+        </div>
+    </footer>
+
+    <!-- JS Logic File -->
+    <script src="hotel-data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

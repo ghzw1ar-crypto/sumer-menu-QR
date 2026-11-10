@@ -1,0 +1,130 @@
+const R = RESTAURANT, $ = id => document.getElementById(id);
+const fmt = n => n.toLocaleString('en-US') + ' د.ع';
+const norm = s => s.replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').toLowerCase();
+let cat = 'all', q = '', type = 'delivery', gps = '', cart = {};
+const GPS_LABEL = '<i class="fa-solid fa-location-crosshairs ml-1"></i>تحديد موقعي الحالي (GPS)';
+
+/* ---------- Header ---------- */
+document.title = R.name;
+$('cover').src = R.cover; $('logo').src = R.logo;
+$('rname').textContent = R.name; $('hours').textContent = R.hoursText;
+$('social').innerHTML = R.social.map(s =>
+  `<a href="${s.url}" target="_blank" rel="noopener" class="w-10 h-10 rounded-full bg-card grid place-items-center hover:bg-accent transition"><i class="${s.icon}"></i></a>`).join('');
+const hr = +new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Baghdad', hour: 'numeric', hourCycle: 'h23' }).format(new Date());
+const isOpen = R.open < R.close ? hr >= R.open && hr < R.close : hr >= R.open || hr < R.close;
+$('status').textContent = isOpen ? 'مفتوح الآن' : 'مغلق';
+$('status').classList.add(isOpen ? 'bg-green-600' : 'bg-red-600');
+
+/* ---------- Categories & menu ---------- */
+function setCat(id) { cat = id; renderCats(); renderMenu(); }
+function renderCats() {
+  $('cats').innerHTML = [{ id: 'all', name: 'الكل' }, ...CATEGORIES].map(c =>
+    `<button onclick="setCat('${c.id}')" class="shrink-0 px-5 py-2 rounded-full text-sm font-semibold ${cat === c.id ? 'bg-accent' : 'bg-card text-gray-300'}">${c.name}</button>`).join('');
+}
+const ctl = id => cart[id]
+  ? `<div class="flex items-center gap-3 bg-[#2a2a2a] rounded-full p-1">
+      <button onclick="chg(${id},1)" aria-label="زيادة" class="w-8 h-8 rounded-full bg-accent font-bold">+</button>
+      <b class="w-5 text-center">${cart[id]}</b>
+      <button onclick="chg(${id},-1)" aria-label="إنقاص" class="w-8 h-8 rounded-full bg-accent font-bold">&minus;</button></div>`
+  : `<button onclick="chg(${id},1)" class="bg-accent px-4 py-2 rounded-full text-sm font-bold"><i class="fa-solid fa-plus ml-1"></i>إضافة للسلة</button>`;
+const card = i => `<article class="bg-card rounded-2xl overflow-hidden flex flex-col shadow-lg">
+  <img src="${i.img}" alt="${i.name}" loading="lazy" class="h-44 w-full object-cover bg-[#2a2a2a]" onerror="this.style.opacity=0">
+  <div class="p-4 flex flex-col flex-1">
+    <h3 class="font-bold text-lg">${i.name}</h3>
+    <p class="text-sm text-gray-400 mt-1 flex-1">${i.desc}</p>
+    <div class="flex items-center justify-between mt-3">
+      <span class="font-bold text-accent">${fmt(i.price)}</span><div id="ctl-${i.id}">${ctl(i.id)}</div>
+    </div></div></article>`;
+function renderMenu() {
+  const k = norm(q.trim());
+  const list = MENU_ITEMS.filter(i => (cat === 'all' || i.cat === cat) && norm(i.name).includes(k));
+  $('menu').innerHTML = list.length ? list.map(card).join('')
+    : '<p class="col-span-full text-center text-gray-400 py-10">لا توجد نتائج مطابقة، جرّب كلمة أخرى.</p>';
+}
+$('search').oninput = e => { q = e.target.value; renderMenu(); };
+
+/* ---------- Cart ---------- */
+const items = () => Object.entries(cart).map(([id, n]) => ({ ...MENU_ITEMS.find(i => i.id == id), n }));
+const total = () => items().reduce((s, i) => s + i.price * i.n, 0);
+const count = () => Object.values(cart).reduce((a, b) => a + b, 0);
+function chg(id, d) {
+  cart[id] = (cart[id] || 0) + d;
+  if (cart[id] <= 0) delete cart[id];
+  sync();
+}
+function sync() {
+  MENU_ITEMS.forEach(i => { const e = $('ctl-' + i.id); if (e) e.innerHTML = ctl(i.id); });
+  const n = count();
+  $('bar').classList.toggle('hidden', !n);
+  $('barCount').innerHTML = `<i class="fa-solid fa-bag-shopping ml-1"></i>${n}`;
+  $('barTotal').textContent = fmt(total());
+  if (!$('drawer').classList.contains('hidden')) n ? renderCart() : closeCart();
+}
+function renderCart() {
+  $('cartList').innerHTML = items().map(i => `<div class="flex items-center gap-3 py-3 border-b border-white/10">
+    <img src="${i.img}" alt="" class="w-14 h-14 rounded-lg object-cover bg-card" onerror="this.style.opacity=0">
+    <div class="flex-1"><p class="font-bold text-sm">${i.name}</p><p class="text-accent text-sm">${fmt(i.price * i.n)}</p></div>
+    ${ctl(i.id)}
+    <button onclick="chg(${i.id},-${i.n})" aria-label="حذف" class="text-red-400 px-1"><i class="fa-solid fa-trash-can"></i></button></div>`).join('');
+  $('cartTotal').textContent = fmt(total());
+}
+function openCart() {
+  renderCart();
+  $('drawer').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(() => requestAnimationFrame(() => $('sheet').classList.remove('translate-y-full')));
+}
+function closeCart() {
+  $('sheet').classList.add('translate-y-full');
+  document.body.style.overflow = '';
+  setTimeout(() => $('drawer').classList.add('hidden'), 300);
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('drawer').classList.contains('hidden')) closeCart(); });
+
+/* ---------- Checkout form ---------- */
+function setType(t) {
+  type = t;
+  $('t-delivery').classList.toggle('on', t === 'delivery');
+  $('t-pickup').classList.toggle('on', t === 'pickup');
+  $('delBox').classList.toggle('hidden', t !== 'delivery');
+  $('delNote').classList.toggle('hidden', t !== 'delivery');
+  $('err').classList.add('hidden');
+}
+const showErr = m => { $('err').textContent = m; $('err').classList.remove('hidden'); };
+
+function locate() {
+  if (!navigator.geolocation) return showErr('متصفحك لا يدعم تحديد الموقع، اكتب العنوان يدوياً.');
+  const b = $('gpsBtn');
+  b.textContent = 'جارٍ تحديد الموقع...';
+  navigator.geolocation.getCurrentPosition(
+    p => {
+      gps = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
+      b.innerHTML = '<i class="fa-solid fa-circle-check ml-1"></i>تم تحديد موقعك';
+      $('err').classList.add('hidden');
+    },
+    () => { b.innerHTML = GPS_LABEL; showErr('تعذّر تحديد موقعك. اسمح للمتصفح بالوصول إلى الموقع أو اكتب العنوان يدوياً.'); },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+/* ---------- WhatsApp ---------- */
+function send() {
+  const name = $('name').value.trim(), notes = $('notes').value.trim(), addr = $('addr').value.trim();
+  const phone = $('phone').value.trim().replace(/[٠-٩]/g, d => d.charCodeAt(0) - 1632).replace(/[\s-]/g, '');
+  const del = type === 'delivery';
+  if (!count()) return showErr('السلة فارغة.');
+  if (!name) return showErr('الرجاء كتابة الاسم الكامل.');
+  if (!/^(\+?964|0)7\d{9}$/.test(phone)) return showErr('رقم الهاتف غير صحيح. مثال: 07701234567');
+  if (del && !addr) return showErr('الرجاء كتابة العنوان أو أقرب نقطة دالة.');
+
+  const sep = '------------------------';
+  const lines = items().map(i => `- ${i.n}x ${i.name} (${fmt(i.price * i.n)})`).join('\n');
+  const msg = `*طلب جديد من الموقع الإلكتروني* 🍔\n${sep}\n` +
+    `*نوع الطلب:* ${del ? 'توصيل' : 'استلام'}\n*الاسم:* ${name}\n*الهاتف:* ${phone}\n` +
+    (del ? `*العنوان:* ${addr}\n` + (gps ? `*موقع GPS:* ${gps}\n` : '') : '') +
+    `${sep}\n*الطلبات:*\n${lines}\n${sep}\n*ملاحظات:* ${notes || '-'}\n` +
+    `*المجموع الكلي:* ${fmt(total())}${del ? ' (لا يشمل كلفة التوصيل)' : ''}`;
+  window.open(`https://wa.me/${R.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+renderCats(); renderMenu();

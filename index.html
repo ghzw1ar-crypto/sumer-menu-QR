@@ -1,131 +1,100 @@
-const R = RESTAURANT, $ = id => document.getElementById(id);
-const fmt = n => n.toLocaleString('en-US') + ' د.ع';
-const norm = s => s.replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').toLowerCase();
-let cat = 'all', q = '', type = 'delivery', gps = '', cart = {};
-const GPS_LABEL = '<i class="fa-solid fa-location-crosshairs ml-1"></i>تحديد موقعي الحالي (GPS)';
- 
-/* ---------- Header ---------- */
-document.title = R.name;
-$('cover').src = R.cover; $('logo').src = R.logo;
-$('rname').textContent = R.name; $('hours').textContent = R.hoursText;
-$('social').innerHTML = R.social.map(s =>
-  `<a href="${s.url}" target="_blank" rel="noopener" class="w-10 h-10 rounded-full bg-card grid place-items-center hover:bg-accent transition"><i class="${s.icon}"></i></a>`).join('');
-const hr = +new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Baghdad', hour: 'numeric', hourCycle: 'h23' }).format(new Date());
-const isOpen = R.open < R.close ? hr >= R.open && hr < R.close : hr >= R.open || hr < R.close;
-$('status').textContent = isOpen ? 'مفتوح الآن' : 'مغلق';
-$('status').classList.add(isOpen ? 'bg-green-600' : 'bg-red-600');
- 
-/* ---------- Categories & menu ---------- */
-function setCat(id) { cat = id; renderCats(); renderMenu(); }
-function renderCats() {
-  $('cats').innerHTML = [{ id: 'all', name: 'الكل' }, ...CATEGORIES].map(c =>
-    `<button onclick="setCat('${c.id}')" class="shrink-0 px-5 py-2 rounded-full text-sm font-semibold ${cat === c.id ? 'bg-accent' : 'bg-card text-gray-300'}">${c.name}</button>`).join('');
-}
-const ctl = id => cart[id]
-  ? `<div class="flex items-center gap-3 bg-[#2a2a2a] rounded-full p-1">
-      <button onclick="chg(${id},1)" aria-label="زيادة" class="w-8 h-8 rounded-full bg-accent font-bold">+</button>
-      <b class="w-5 text-center">${cart[id]}</b>
-      <button onclick="chg(${id},-1)" aria-label="إنقاص" class="w-8 h-8 rounded-full bg-accent font-bold">&minus;</button></div>`
-  : `<button onclick="chg(${id},1)" class="bg-accent px-4 py-2 rounded-full text-sm font-bold"><i class="fa-solid fa-plus ml-1"></i>إضافة للسلة</button>`;
-const card = i => `<article class="bg-card rounded-2xl overflow-hidden flex flex-col shadow-lg">
-  <img src="${i.img}" alt="${i.name}" loading="lazy" class="h-44 w-full object-cover bg-[#2a2a2a]" onerror="this.style.opacity=0">
-  <div class="p-4 flex flex-col flex-1">
-    <h3 class="font-bold text-lg">${i.name}</h3>
-    <p class="text-sm text-gray-400 mt-1 flex-1">${i.desc}</p>
-    <div class="flex items-center justify-between mt-3">
-      <span class="font-bold text-accent">${fmt(i.price)}</span><div id="ctl-${i.id}">${ctl(i.id)}</div>
-    </div></div></article>`;
-function renderMenu() {
-  const k = norm(q.trim());
-  const list = MENU_ITEMS.filter(i => (cat === 'all' || i.cat === cat) && norm(i.name).includes(k));
-  $('menu').innerHTML = list.length ? list.map(card).join('')
-    : '<p class="col-span-full text-center text-gray-400 py-10">لا توجد نتائج مطابقة، جرّب كلمة أخرى.</p>';
-}
-$('search').oninput = e => { q = e.target.value; renderMenu(); };
- 
-/* ---------- Cart ---------- */
-const items = () => Object.entries(cart).map(([id, n]) => ({ ...MENU_ITEMS.find(i => i.id == id), n }));
-const total = () => items().reduce((s, i) => s + i.price * i.n, 0);
-const count = () => Object.values(cart).reduce((a, b) => a + b, 0);
-function chg(id, d) {
-  cart[id] = (cart[id] || 0) + d;
-  if (cart[id] <= 0) delete cart[id];
-  sync();
-}
-function sync() {
-  MENU_ITEMS.forEach(i => { const e = $('ctl-' + i.id); if (e) e.innerHTML = ctl(i.id); });
-  const n = count();
-  $('bar').classList.toggle('hidden', !n);
-  $('barCount').innerHTML = `<i class="fa-solid fa-bag-shopping ml-1"></i>${n}`;
-  $('barTotal').textContent = fmt(total());
-  if (!$('drawer').classList.contains('hidden')) n ? renderCart() : closeCart();
-}
-function renderCart() {
-  $('cartList').innerHTML = items().map(i => `<div class="flex items-center gap-3 py-3 border-b border-white/10">
-    <img src="${i.img}" alt="" class="w-14 h-14 rounded-lg object-cover bg-card" onerror="this.style.opacity=0">
-    <div class="flex-1"><p class="font-bold text-sm">${i.name}</p><p class="text-accent text-sm">${fmt(i.price * i.n)}</p></div>
-    ${ctl(i.id)}
-    <button onclick="chg(${i.id},-${i.n})" aria-label="حذف" class="text-red-400 px-1"><i class="fa-solid fa-trash-can"></i></button></div>`).join('');
-  $('cartTotal').textContent = fmt(total());
-}
-function openCart() {
-  renderCart();
-  $('drawer').classList.remove('hidden');
-  document.body.style.overflow = 'hidden';
-  requestAnimationFrame(() => requestAnimationFrame(() => $('sheet').classList.remove('translate-y-full')));
-}
-function closeCart() {
-  $('sheet').classList.add('translate-y-full');
-  document.body.style.overflow = '';
-  setTimeout(() => $('drawer').classList.add('hidden'), 300);
-}
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('drawer').classList.contains('hidden')) closeCart(); });
- 
-/* ---------- Checkout form ---------- */
-function setType(t) {
-  type = t;
-  $('t-delivery').classList.toggle('on', t === 'delivery');
-  $('t-pickup').classList.toggle('on', t === 'pickup');
-  $('delBox').classList.toggle('hidden', t !== 'delivery');
-  $('delNote').classList.toggle('hidden', t !== 'delivery');
-  $('err').classList.add('hidden');
-}
-const showErr = m => { $('err').textContent = m; $('err').classList.remove('hidden'); };
- 
-function locate() {
-  if (!navigator.geolocation) return showErr('متصفحك لا يدعم تحديد الموقع، اكتب العنوان يدوياً.');
-  const b = $('gpsBtn');
-  b.textContent = 'جارٍ تحديد الموقع...';
-  navigator.geolocation.getCurrentPosition(
-    p => {
-      gps = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
-      b.innerHTML = '<i class="fa-solid fa-circle-check ml-1"></i>تم تحديد موقعك';
-      $('err').classList.add('hidden');
-    },
-    () => { b.innerHTML = GPS_LABEL; showErr('تعذّر تحديد موقعك. اسمح للمتصفح بالوصول إلى الموقع أو اكتب العنوان يدوياً.'); },
-    { enableHighAccuracy: true, timeout: 10000 }
-  );
-}
- 
-/* ---------- WhatsApp ---------- */
-function send() {
-  const name = $('name').value.trim(), notes = $('notes').value.trim(), addr = $('addr').value.trim();
-  const phone = $('phone').value.trim().replace(/[٠-٩]/g, d => d.charCodeAt(0) - 1632).replace(/[\s-]/g, '');
-  const del = type === 'delivery';
-  if (!count()) return showErr('السلة فارغة.');
-  if (!name) return showErr('الرجاء كتابة الاسم الكامل.');
-  if (!/^(\+?964|0)7\d{9}$/.test(phone)) return showErr('رقم الهاتف غير صحيح. مثال: 07701234567');
-  if (del && !addr) return showErr('الرجاء كتابة العنوان أو أقرب نقطة دالة.');
- 
-  const sep = '------------------------';
-  const lines = items().map(i => `- ${i.n}x ${i.name} (${fmt(i.price * i.n)})`).join('\n');
-  const msg = `*طلب جديد من الموقع الإلكتروني* 🍔\n${sep}\n` +
-    `*نوع الطلب:* ${del ? 'توصيل' : 'استلام'}\n*الاسم:* ${name}\n*الهاتف:* ${phone}\n` +
-    (del ? `*العنوان:* ${addr}\n` + (gps ? `*موقع GPS:* ${gps}\n` : '') : '') +
-    `${sep}\n*الطلبات:*\n${lines}\n${sep}\n*ملاحظات:* ${notes || '-'}\n` +
-    `*المجموع الكلي:* ${fmt(total())}${del ? ' (لا يشمل كلفة التوصيل)' : ''}`;
-  window.open(`https://wa.me/${R.whatsapp}?text=${encodeURIComponent(msg)}`, '_blank');
-}
- 
-renderCats(); renderMenu();
- 
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>القائمة الرقمية</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>tailwind.config = { theme: { extend: { colors: { accent: '#FF6B00', card: '#1E1E1E' } } } }</script>
+<style>
+  body { font-family: 'Cairo', sans-serif; background: #121212; color: #fff; }
+  .no-sb::-webkit-scrollbar { display: none } .no-sb { scrollbar-width: none }
+  .field { width: 100%; background: #1E1E1E; border: 1px solid #2c2c2c; border-radius: .75rem; padding: .75rem 1rem; outline: none }
+  .field:focus { border-color: #FF6B00 }
+  .tbtn { padding: .75rem; border-radius: .75rem; background: #1E1E1E; border: 1px solid #2c2c2c; font-weight: 600 }
+  .tbtn.on { background: #FF6B00; border-color: #FF6B00 }
+  button:focus-visible, a:focus-visible { outline: 2px solid #FF6B00; outline-offset: 2px }
+</style>
+</head>
+<body class="pb-28">
+
+<header>
+  <div class="relative h-48 md:h-64">
+    <img id="cover" alt="" class="w-full h-full object-cover opacity-70">
+    <div class="absolute inset-0 bg-gradient-to-t from-[#121212] to-transparent"></div>
+  </div>
+  <div class="max-w-6xl mx-auto px-4 -mt-14 relative flex items-end gap-4">
+    <img id="logo" alt="" class="w-24 h-24 rounded-full border-4 border-[#121212] object-cover bg-card">
+    <div class="pb-1">
+      <h1 id="rname" class="text-2xl font-extrabold"></h1>
+      <div class="flex flex-wrap items-center gap-3 text-sm text-gray-400 mt-1">
+        <span id="status" class="px-3 py-0.5 rounded-full text-xs font-bold text-white"></span>
+        <span><i class="fa-regular fa-clock ml-1"></i><span id="hours"></span></span>
+      </div>
+    </div>
+  </div>
+  <div id="social" class="max-w-6xl mx-auto px-4 mt-3 flex gap-2"></div>
+</header>
+
+<nav class="sticky top-0 z-30 bg-[#121212]/95 backdrop-blur py-3 mt-4 border-b border-white/5">
+  <div class="max-w-6xl mx-auto px-4 space-y-3">
+    <div class="relative">
+      <i class="fa-solid fa-magnifying-glass absolute right-4 top-3.5 text-gray-500"></i>
+      <input id="search" type="search" placeholder="ابحث عن وجبتك..." class="field !rounded-full !pr-11">
+    </div>
+    <div id="cats" class="flex gap-2 overflow-x-auto no-sb"></div>
+  </div>
+</nav>
+
+<main id="menu" class="max-w-6xl mx-auto px-4 py-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></main>
+
+<!-- Floating cart bar -->
+<div id="bar" class="hidden fixed bottom-0 inset-x-0 z-40 p-3">
+  <button onclick="openCart()" class="max-w-xl mx-auto w-full bg-accent rounded-2xl px-4 py-3 flex items-center justify-between gap-2 shadow-2xl font-bold">
+    <span id="barCount" class="bg-black/25 rounded-full px-3 py-1 text-sm"></span>
+    <span>عرض السلة وإتمام الطلب</span>
+    <span id="barTotal" class="text-sm"></span>
+  </button>
+</div>
+
+<!-- Cart drawer -->
+<div id="drawer" class="hidden fixed inset-0 z-50">
+  <div onclick="closeCart()" class="absolute inset-0 bg-black/70"></div>
+  <div id="sheet" class="absolute bottom-0 inset-x-0 max-w-xl mx-auto bg-[#181818] rounded-t-3xl max-h-[92vh] overflow-y-auto p-5 translate-y-full transition-transform duration-300">
+    <div class="flex justify-between items-center mb-2">
+      <h2 class="text-xl font-bold">سلة الطلبات</h2>
+      <button onclick="closeCart()" aria-label="إغلاق" class="text-3xl leading-none text-gray-400">&times;</button>
+    </div>
+    <div id="cartList"></div>
+    <div class="flex justify-between font-bold text-lg py-3"><span>المجموع</span><span id="cartTotal" class="text-accent"></span></div>
+
+    <div class="grid grid-cols-2 gap-2 mb-4">
+      <button id="t-delivery" onclick="setType('delivery')" class="tbtn on"><i class="fa-solid fa-motorcycle ml-1"></i>توصيل للمنزل</button>
+      <button id="t-pickup" onclick="setType('pickup')" class="tbtn"><i class="fa-solid fa-store ml-1"></i>استلام من المطعم</button>
+    </div>
+
+    <div class="space-y-3">
+      <input id="name" class="field" placeholder="الاسم الكامل" autocomplete="name">
+      <input id="phone" class="field" type="tel" placeholder="رقم الهاتف (07xxxxxxxxx)" autocomplete="tel">
+      <div id="delBox" class="space-y-3">
+        <textarea id="addr" rows="2" class="field" placeholder="العنوان بالتفصيل / أقرب نقطة دالة"></textarea>
+        <button id="gpsBtn" onclick="locate()" class="w-full border border-accent text-accent rounded-xl py-3 font-semibold">
+          <i class="fa-solid fa-location-crosshairs ml-1"></i>تحديد موقعي الحالي (GPS)
+        </button>
+      </div>
+      <textarea id="notes" rows="2" class="field" placeholder="ملاحظات إضافية (مثال: بدون مخلل، كثر ثوميه)"></textarea>
+      <p id="err" class="hidden text-red-400 text-sm"></p>
+      <button onclick="send()" class="w-full bg-[#25D366] text-black rounded-xl py-3.5 font-bold text-lg">
+        <i class="fa-brands fa-whatsapp ml-1"></i>إرسال الطلب عبر واتساب
+      </button>
+      <p id="delNote" class="text-xs text-gray-500 text-center">المجموع لا يشمل كلفة التوصيل</p>
+    </div>
+  </div>
+</div>
+
+<script src="menu-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -28,7 +28,7 @@ const hotelData = {
             priceUSD: 40,
             priceIQD: 52000,
             capacity: "شخص واحد بالغ",
-            image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=800&q=80",
+            image: "https://flow-content.google/image/8b482811-0ee0-4b8a-875f-99a7a85c0b2b?Expires=1794353791&KeyName=labs-flow-prod-cdn-key&Signature=CfjOg0xXJBrPFOiuIfZNkxa3QOo",
             features: ["سرير مفرد فاخر", "حمام خاص مع مستلزمات", "شاشة مسطحة Smart TV", "مكتب عمل صغير"]
         },
         {
